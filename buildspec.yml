@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --no-include-email)
+  build:
+    commands:
+      - export IMAGE_TAG=$(git rev-parse HEAD)
+      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ioi18-hako-front:$IMAGE_TAG .
+      - docker tag $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ioi18-hako-front:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ioi18-hako-front:latest
+  post_build:
+    commands:
+      - 'aws ecr create-repository --repository-name ioi18-hako-front || :'
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ioi18-hako-front:$IMAGE_TAG
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/ioi18-hako-front:latest
